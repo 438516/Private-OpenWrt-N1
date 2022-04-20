@@ -127,7 +127,7 @@ jobs:
     - name: 清理编译环境压缩包
       id: tarql
       run: |
-        sudo rm $GITHUB_WORKSPACE/dev.tar.gz
+        sudo rm /dev.tar.gz
 
 #    - name: 压缩：workdir.tar.gz
 #      id: tarzl1
