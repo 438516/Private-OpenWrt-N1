@@ -1,0 +1,34 @@
+name: action-test-ssh
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'true'
+
+  #schedule:
+  #  - cron: 0 16 * * *
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: SSH connection to Actions
+      uses: P3TERX/ssh2actions@v1.0.0
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+    - name: 清理Actions空间
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          keep_minimum_runs: 0
+          retain_days: 7
+          #retain_days: ${{ github.event.inputs.action_days }}

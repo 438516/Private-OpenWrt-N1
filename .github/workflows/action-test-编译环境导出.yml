@@ -1,0 +1,188 @@
+name: action-test-编译环境导出
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'false'
+
+  #schedule:
+  #  - cron: 0 16 * * *
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  FEEDS_CONF: feeds.conf.default
+  CONFIG_FILE: .config
+  DIY_P1_SH: diy-part1.sh
+  DIY_P2_SH: diy-part2.sh
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+
+    - name: 检查服务器配置
+      run: |
+        echo "警告⚠"
+        echo "若分配的服务器性能不足，务必及时取消，重新运行！"
+        echo "已知编译成功CPU型号：8370C,8171M"
+        echo "已知性能不足CPU型号：8272CL,E5系列"
+        echo "--------------------------CPU信息--------------------------"
+        echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
+        echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
+        echo "--------------------------内存信息--------------------------"
+        echo "已安装内存详细信息："
+        sudo lshw -short -C memory | grep GiB
+        echo -e "\n"
+        echo "--------------------------硬盘信息--------------------------"
+        echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
+        echo "硬盘详情："
+        df -Th
+
+    - name: 初始化编译环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        sudo timedatectl set-timezone "$TZ"
+        sudo mkdir -p /workdir
+        sudo chown $USER:$GROUPS /workdir
+        # 清理多余文件，腾出磁盘空间
+        docker rmi $(docker images -q)
+        # sudo -E apt-get remove -y --purge azure-cli ghc zulu* hhvm llvm* firefox google* dotnet* powershell mysql* php* mssql-tools msodbcsql17 android*
+        # sudo rm -rf /etc/mysql /etc/php /swapfile
+
+    - name: 克隆源码
+      working-directory: /workdir
+      run: |
+        df -hT $PWD
+        git clone $REPO_URL -b $REPO_BRANCH openwrt
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+
+    - name: 编译工具链缓存
+      uses: klever1988/cachewrtbuild@main
+      with:
+        ccache: 'true'
+        prefix: ${{ github.workspace }}/openwrt
+
+    - name: 加载自定义feeds
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH
+
+    - name: 更新feeds
+      run: cd openwrt && ./scripts/feeds update -a
+
+    - name: 安装feeds
+      run: cd openwrt && ./scripts/feeds install -a
+
+    - name: 加载自定义配置
+      run: |
+        [ -e files ] && mv files openwrt/files
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH
+
+    - name: 下载软件包
+      id: package
+      run: |
+        cd openwrt
+        make defconfig
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: SSH connection to Actions
+      uses: P3TERX/ssh2actions@v1.0.0
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+    - name: 压缩：workdir.tar.gz
+      id: tarzl1
+      run: |
+        cd /
+        sudo tar -zcvf workdir.tar.gz workdir/
+
+    - name: 编译环境导出：workdir.tar.gz
+      uses: ncipollo/release-action@v1
+      with:
+        tag: openwrt_N1_${{ env.PACKAGED_OUTPUTDATE }}
+        artifacts: /workdir.tar.gz
+        allowUpdates: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: |
+          * **编译环境导出：workdir.tar.gz**
+
+    - name: 清理编译环境的压缩包：workdir.tar.gz
+      id: tarql1
+      run: |
+        cd /
+        sudo rm workdir.tar.gz
+
+    - name: 压缩：home-runner-work.tar.gz
+      id: tarzl2
+      run: |
+        cd /home/runner
+        sudo tar -zcvf home-runner-work.tar.gz work/
+
+    - name: 编译环境导出：home-runner-work.tar.gz
+      uses: ncipollo/release-action@v1
+      with:
+        tag: openwrt_N1_${{ env.PACKAGED_OUTPUTDATE }}
+        artifacts: /home/runner/home-runner-work.tar.gz
+        allowUpdates: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: |
+          * **编译环境导出：home-runner-work.tar.gz**
+
+    - name: 清理编译环境的压缩包：home-runner-work.tar.gz
+      id: tarql2
+      run: |
+        cd /home/runner
+        sudo rm home-runner-work.tar.gz
+
+    - name: 清理磁盘空间
+      if: (!cancelled())
+      run: |
+        echo "清理之前："
+        df -hT
+        echo "转移编译好底包命令，已移除"
+        echo -e "\n"
+        echo "列出空间占用前10的目录或文件："
+        sudo du -h --max-depth=2 /workdir/openwrt |sort -nr | head -10
+        rm -rf /workdir/openwrt/*
+        echo -e "\n"
+        echo "清理之后："
+        df -hT
+        echo -e "\n"
+        echo "当前路径文件"
+        ls -l
+        echo -e "\n"
+        echo "列出空间占用前10的目录或文件："
+        sudo du -h --max-depth=1 /workdir/openwrt |sort -nr | head -10
+
+    - name: 清理Actions空间
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          keep_minimum_runs: 0
+          retain_days: 7
+          #retain_days: ${{ github.event.inputs.action_days }}
