@@ -114,12 +114,13 @@ jobs:
         sudo rm $GITHUB_WORKSPACE/openwrt
         sudo mv /workdir/openwrt/ $GITHUB_WORKSPACE/
         sudo tar -zcvf dev.tar.gz ./*
+        sudo mv dev.tar.gz /
 
     - name: 编译环境导出
       uses: ncipollo/release-action@v1
       with:
         tag: 编译环境
-        artifacts: $GITHUB_WORKSPACE/dev.tar.gz
+        artifacts: /dev.tar.gz
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
