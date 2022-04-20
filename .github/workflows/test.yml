@@ -80,12 +80,6 @@ jobs:
         sudo rm -rf openwrt
         ln -sf /workdir/openwrt /home/runner/work/Actions-OpenWrt-N1/Actions-OpenWrt-N1/openwrt
 
-    - name: 编译工具链缓存
-      uses: klever1988/cachewrtbuild@main
-      with:
-        ccache: 'true'
-        prefix: ${{ github.workspace }}/openwrt
-
     - name: 编译固件
       working-directory: /workdir
       id: compile

@@ -71,12 +71,6 @@ jobs:
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
-    - name: 编译工具链缓存
-      uses: klever1988/cachewrtbuild@main
-      with:
-        ccache: 'true'
-        prefix: ${{ github.workspace }}/openwrt
-
     - name: 加载自定义feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
@@ -114,49 +108,69 @@ jobs:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
-    - name: 压缩：workdir.tar.gz
-      id: tarzl1
+    - name: 整理编译环境
+      id: tarzl
       run: |
-        cd /
-        sudo tar -zcvf workdir.tar.gz workdir/
+        sudo rm $GITHUB_WORKSPACE/openwrt
+        sudo mv /workdir/openwrt/ $GITHUB_WORKSPACE/
+        sudo tar -zcvf dev.tar.gz ./*
 
-    - name: 编译环境导出：workdir.tar.gz
+    - name: 编译环境导出
       uses: ncipollo/release-action@v1
       with:
-        tag: openwrt_N1_${{ env.PACKAGED_OUTPUTDATE }}
-        artifacts: /workdir.tar.gz
+        tag: 编译环境
+        artifacts: $GITHUB_WORKSPACE/dev.tar.gz
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        body: |
-          * **编译环境导出：workdir.tar.gz**
 
-    - name: 清理编译环境的压缩包：workdir.tar.gz
-      id: tarql1
+    - name: 清理编译环境压缩包
+      id: tarql
       run: |
-        cd /
-        sudo rm workdir.tar.gz
+        sudo rm $GITHUB_WORKSPACE/dev.tar.gz
 
-    - name: 压缩：home-runner-work.tar.gz
-      id: tarzl2
-      run: |
-        cd /home/runner
-        sudo tar -zcvf home-runner-work.tar.gz work/
-
-    - name: 编译环境导出：home-runner-work.tar.gz
-      uses: ncipollo/release-action@v1
-      with:
-        tag: openwrt_N1_${{ env.PACKAGED_OUTPUTDATE }}
-        artifacts: /home/runner/home-runner-work.tar.gz
-        allowUpdates: true
-        token: ${{ secrets.GITHUB_TOKEN }}
-        body: |
-          * **编译环境导出：home-runner-work.tar.gz**
-
-    - name: 清理编译环境的压缩包：home-runner-work.tar.gz
-      id: tarql2
-      run: |
-        cd /home/runner
-        sudo rm home-runner-work.tar.gz
+#    - name: 压缩：workdir.tar.gz
+#      id: tarzl1
+#      run: |
+#        cd /
+#        sudo tar -zcvf workdir.tar.gz workdir/
+#
+#    - name: 编译环境导出：workdir.tar.gz
+#      uses: ncipollo/release-action@v1
+#      with:
+#        tag: openwrt_N1_${{ env.PACKAGED_OUTPUTDATE }}
+#        artifacts: /workdir.tar.gz
+#        allowUpdates: true
+#        token: ${{ secrets.GITHUB_TOKEN }}
+#        body: |
+#          * **编译环境导出：workdir.tar.gz**
+#
+#    - name: 清理编译环境的压缩包：workdir.tar.gz
+#      id: tarql1
+#      run: |
+#        cd /
+#        sudo rm workdir.tar.gz
+#
+#    - name: 压缩：home-runner-work.tar.gz
+#      id: tarzl2
+#      run: |
+#        cd /home/runner
+#        sudo tar -zcvf home-runner-work.tar.gz work/
+#
+#    - name: 编译环境导出：home-runner-work.tar.gz
+#      uses: ncipollo/release-action@v1
+#      with:
+#        tag: openwrt_N1_${{ env.PACKAGED_OUTPUTDATE }}
+#        artifacts: /home/runner/home-runner-work.tar.gz
+#        allowUpdates: true
+#        token: ${{ secrets.GITHUB_TOKEN }}
+#        body: |
+#          * **编译环境导出：home-runner-work.tar.gz**
+#
+#    - name: 清理编译环境的压缩包：home-runner-work.tar.gz
+#      id: tarql2
+#      run: |
+#        cd /home/runner
+#        sudo rm home-runner-work.tar.gz
 
     - name: 清理磁盘空间
       if: (!cancelled())
