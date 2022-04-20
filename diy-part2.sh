@@ -32,14 +32,14 @@ sed -i 's/invalid users = root/#invalid users = root/g' feeds/packages/net/samba
 # （lean仓库没有的）拉取晶晨宝盒
 git clone https://github.com/ophub/luci-app-amlogic.git package/luci-app-amlogic
 
-# （lean仓库没有的）拉取openwrt-chinadns-ng
-git clone -b luci https://github.com/pexcn/openwrt-chinadns-ng.git package/luci-app-chinadns-ng
+# 已弃用：（lean仓库没有的）拉取openwrt-chinadns-ng
+# git clone -b luci https://github.com/pexcn/openwrt-chinadns-ng.git package/luci-app-chinadns-ng
 
 # （lean仓库没有的）拉取网络存储 - luci-app-gowebdav
 svn co https://github.com/immortalwrt-collections/openwrt-gowebdav/trunk/luci-app-gowebdav package/luci-app-gowebdav
 svn co https://github.com/immortalwrt-collections/openwrt-gowebdav/trunk/gowebdav package/gowebdav
 
-#移除lean仓库luci的argon主题
+# 移除lean仓库luci的argon主题
 rm -rf feeds/luci/themes/luci-theme-argon
 
 # 拉取jerrykuku仓库的argon主题：18.06
