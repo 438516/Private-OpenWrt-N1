@@ -45,3 +45,13 @@ rm -rf feeds/luci/themes/luci-theme-argon
 # 拉取jerrykuku仓库的argon主题：18.06
 git clone https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
+
+# 拉取关机luci插件
+git clone https://github.com/sirpdboy/luci-app-poweroffdevice package/luci-app-poweroffdevice
+git clone https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
+
+# passwall插件
+# git clone https://github.com/xiaorouji/openwrt-passwall package/passwall
+
+# helloworld插件
+# git clone https://github.com/fw876/helloworld package/helloworld
