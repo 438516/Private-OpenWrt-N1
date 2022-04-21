@@ -24,7 +24,7 @@ jobs:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         
-    - name: ${{ env.PACKAGED_OUTPUTDATE }}
+    - name: 1${{ env.PACKAGED_OUTPUTDATE }}
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ env.PACKAGED_OUTPUTDATE }}
