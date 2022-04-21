@@ -119,7 +119,7 @@ jobs:
     - name: 编译环境导出
       uses: ncipollo/release-action@v1
       with:
-        tag: 编译环境
+        tag: 编译环境_${{ env.PACKAGED_OUTPUTDATE }}
         artifacts: /dev.tar.gz
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
