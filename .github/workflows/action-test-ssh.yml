@@ -24,15 +24,12 @@ jobs:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         
-    - name: 发布固件
+    - name: N1_${{ env.PACKAGED_OUTPUTDATE }}
       uses: ncipollo/release-action@v1
       with:
-        tag: adc_${{ env.PACKAGED_OUTPUTDATE }}
-        artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+        tag: N1_${{ env.PACKAGED_OUTPUTDATE }}
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        body: |
-          ### **适用于Amlogic平台的N1盒子OpenWrt固件**
 
     - name: 清理Actions空间
       uses: Mattraks/delete-workflow-runs@main
