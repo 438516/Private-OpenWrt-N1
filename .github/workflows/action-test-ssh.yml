@@ -7,7 +7,11 @@ on:
       ssh:
         description: 'SSH connection to Actions'
         required: false
-        default: 'true'
+        default: 'false'
+      tag_version:
+        description: '编译环境版本'
+        required: false
+        default: 'v1'
 
   #schedule:
   #  - cron: 0 16 * * *
@@ -23,6 +27,13 @@ jobs:
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+    - name: 编译环境导出
+      uses: ncipollo/release-action@v1
+      with:
+        tag: 编译环境_${{ github.event.inputs.tag_version }}
+        allowUpdates: true
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: 清理Actions空间
       uses: Mattraks/delete-workflow-runs@main
