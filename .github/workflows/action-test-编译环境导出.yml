@@ -8,6 +8,10 @@ on:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
+      tag_version:
+        description: '编译环境版本'
+        required: false
+        default: 'v1'
 
   #schedule:
   #  - cron: 0 16 * * *
@@ -119,7 +123,7 @@ jobs:
     - name: 编译环境导出
       uses: ncipollo/release-action@v1
       with:
-        tag: 编译环境_${{ env.PACKAGED_OUTPUTDATE }}
+        tag: 编译环境_${{ github.event.inputs.tag_version }}
         artifacts: /dev.tar.gz
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
