@@ -1,4 +1,4 @@
-name: 使用最新源码编译固件-n1
+name: 使用最新源码编译固件
 
 on:
   repository_dispatch:
