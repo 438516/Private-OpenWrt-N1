@@ -16,13 +16,13 @@
 sed -i 's/192.168.1.1/192.168.123.123/g' package/base-files/files/bin/config_generate
 
 # 修改默认主题
-sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' ./feeds/luci/collections/luci/Makefile
+sed -i 's/luci-theme-bootstrap/luci-theme-intinityfreedom/g' ./feeds/luci/collections/luci/Makefile
 
 # 设置固件build信息
 sed -i "s/OpenWrt /五行缺钱 Build $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" package/lean/default-settings/files/zzz-default-settings
 
 # 修改主机名
-sed -i 's/OpenWrt/N1-ssw/g' package/base-files/files/bin/config_generate
+sed -i 's/OpenWrt/斐讯N1/g' package/base-files/files/bin/config_generate
 
 # samba4无效用户root：关闭
 sed -i 's/invalid users = root/#invalid users = root/g' feeds/packages/net/samba4/files/smb.conf.template
@@ -49,8 +49,8 @@ sed -i 's#opt/kernel#kernel#g' package/luci-app-amlogic/luci-app-amlogic/root/et
 git clone -b luci https://github.com/pexcn/openwrt-chinadns-ng.git package/luci-app-chinadns-ng
 
 # （lean仓库没有的）拉取网络存储 - luci-app-gowebdav
-svn co https://github.com/immortalwrt-collections/openwrt-gowebdav/trunk/luci-app-gowebdav package/luci-app-gowebdav
-svn co https://github.com/immortalwrt-collections/openwrt-gowebdav/trunk/gowebdav package/gowebdav
+# svn co https://github.com/immortalwrt-collections/openwrt-gowebdav/trunk/luci-app-gowebdav package/luci-app-gowebdav
+# svn co https://github.com/immortalwrt-collections/openwrt-gowebdav/trunk/gowebdav package/gowebdav
 
 # 移除lean仓库luci的argon主题
 rm -rf feeds/luci/themes/luci-theme-argon
@@ -76,10 +76,10 @@ git clone https://github.com/sirpdboy/luci-app-poweroffdevice package/luci-app-p
 git clone https://github.com/esirplayground/luci-app-poweroff package/luci-app-poweroff
 
 # passwall插件
-# git clone https://github.com/xiaorouji/openwrt-passwall package/passwall
+git clone https://github.com/xiaorouji/openwrt-passwall package/passwall
 
 # helloworld插件
-# git clone https://github.com/fw876/helloworld package/helloworld
+git clone https://github.com/fw876/helloworld package/helloworld
 
 # 拉取kenzok8的small-package软件包（同名软件包默认使用lean的，要使用其他仓库插件，先删除lean的再clone其他库）
 git clone https://github.com/kenzok8/small-package package/small-package
